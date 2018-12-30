@@ -13,15 +13,18 @@ import router from './router'
 import store from './store'
 
 import 'element-ui/lib/theme-chalk/index.css'
+import './assets/css/style.scss'
+
+Vue.use(ElementUI)
 
 Vue.config.productionTip = false
 
 const uri = `${process.env.VUE_APP_URI}/graphql`
-const httpLink = new HttpLink({ uri })
+const httpLink = new HttpLink({uri})
 
 const cache = new InMemoryCache({})
 
-const errorLink = onError(({ graphQLErrors, networkError}) => {
+const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors) {
         graphQLErrors.map(({ message, locations, path }) => {
             console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
