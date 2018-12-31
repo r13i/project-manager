@@ -9,10 +9,29 @@ sudo service mongod start
 
 # Then, run the server
 yarn dev
-
-# To test email adding to the DB, got to 'localhost:5500/playground' and write a 'mutation' :
 ```
+
+### Client-side
+```bash
+# Start Vue
+yarn serve
+```
+
+
+
+### Apollo GraphQL's Playground
+
+#### Testing 'Email Capture'
+This playground is used to test the API without worrying about the UI
+```bash
+# To open the playground, start by launching the server with this command
+yarn dev
+
+# Then, connect with your browser to 'http://localhost:5500/playground'
+```
+
 ```javascript
+// In order to send a request, we need to write a 'mutation' :
 mutation CaptureEmail($email: String!) {
     captureEmail(email: $email) {
         id
@@ -21,12 +40,12 @@ mutation CaptureEmail($email: String!) {
 }
 ```
 ```bash
-# Then, got to 'QUERY VARIABLES' and enter an email
+# Then, got to the tab 'QUERY VARIABLES' and enter an email
 {
     "email": "email@example.com"
 }
 
-# You should see receive a confirmation of creation
+# You should receive a confirmation of creation
 
 # To confirm on Mongo, open a shell and type :
 mongo
@@ -38,11 +57,27 @@ db.users.find().pretty()
 # You should see all the user entries in JSON format
 ```
 
-
-
-
-### Client-side
+#### Testing Signup
+```javascript
+// We start by writing a 'mutation'
+mutation Signup ($id: String!, $firstname: String!, $lastname: String!, $password: String!){
+  signup(id: $id, firstname: $firstname, lastname: $lastname, password: $password) {
+    token
+    user {
+      id
+      email
+    }
+  }
+}
 ```
-# Start Vue
-yarn serve
+
+```bash
+# Then, got to the tab 'QUERY VARIABLES' and enter user credentials
+# N.B. We need to fetch the user's ID from Mongo
+{
+  "id": "5c2a0c02b07eac693157ba9e",
+  "firstname": "John",
+  "lastname": "Doe",
+  "password": "mypassword"
+}
 ```
