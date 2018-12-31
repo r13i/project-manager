@@ -39,6 +39,8 @@ module.exports.User = buildModel('User', {
     password: {
         type: String,
     },
+    role: String,
+    status: String,
     jobTitle: {
         type: String,
         default: '',
@@ -48,5 +50,4 @@ module.exports.User = buildModel('User', {
         type: ObjectId,
         ref: 'Team',
     },
-    status: String
 })
