@@ -2,10 +2,11 @@ const { GraphQLScalarType } = require('graphql')
 const moment = require('moment')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const nodeMailer = require('nodemailer')
 
 const { User, Team } = require('./models')
+const { welcomeEmail } = require('./emails')
 const JWT_SECRET = process.env.JWT_SECRET
-
 
 
 function randomChoice(arr) {
@@ -17,6 +18,16 @@ const avatarColors = [
     "80DEEA", "4DD0E1", "00ACC1", "9FA8DA", "7986CB", "3949AB", "8E24AA", "BA68C8", "CE93D8"
 ]
 
+
+const transporter = nodeMailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 456,
+    secure: true,
+    auth: {
+        user: process.env.FROM_EMAIL,
+        pass: process.env.GMAIL_PASSWORD
+    }
+})
 
 
 const resolvers = {
@@ -30,6 +41,10 @@ const resolvers = {
         async captureEmail(_, {email}) {
             const isEmailTaken = await User.findOne({email})
             if (isEmailTaken) {
+                // TODO:
+                // Change this to something like 'Confirmation already sent to this email'
+                // Because this is a security issue since it informs that a user already
+                // has this email, so an attacker could focus a phishing attack on him
                 throw new Error('This email is already taken !')
             }
             const user = await User.create({
@@ -37,6 +52,9 @@ const resolvers = {
                 role: 'Owner',
                 status: 'Pending'
             });
+
+            transporter.sendMail(welcomeEmail(email, user))
+
             return user;
         },
 
@@ -76,7 +94,23 @@ const resolvers = {
             return { token, user }
         },
 
-        async login (_, {email, password}) {}
+        async login (_, {email, password}) {
+            const user = await User.findOne({ email })
+            if (!user) {
+                throw new Error('No user with this email')
+            }
+
+            const valid = await bcrypt.compare(password, user.password)
+            if (!valid) {
+                throw new Error('Incorrect password')
+            }
+
+            const token = jwt.sign(
+                { id: user.id, email },
+                JWT_SECRET
+            )
+            return { token, user }
+        }
     },
 
     Date: new GraphQLScalarType({
